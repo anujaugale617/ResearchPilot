@@ -118,8 +118,8 @@
 ## 📁 Repository Structure
 
 ```
-d:/AniGravity/
-├── client/                     # Vite + React Frontend
+d:/ResearchPilot/
+├── Frontend/                     # Vite + React Frontend
 │   ├── public/                 # Static assets
 │   └── src/
 │       ├── assets/             # Brand logos, icons
@@ -133,7 +133,7 @@ d:/AniGravity/
 │       ├── App.jsx             # Route definitions
 │       └── main.jsx            # Entrypoint
 │
-├── server/                     # Express.js REST & SSE Backend
+├── Backend/                      # Express.js REST & SSE Backend
 │   └── src/
 │       ├── agents/             # LangGraph.js Research Orchestrator & graph nodes
 │       ├── config/             # DB connection, Cloudinary, environment loader
@@ -173,13 +173,13 @@ d:/AniGravity/
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd AniGravity
+cd ResearchPilot
 
 # Create backend environment file
-copy .env.example server/.env
+copy .env.example Backend/.env
 ```
 
-Edit `server/.env` with your API keys:
+Edit `Backend/.env` with your API keys:
 - `MONGODB_URI`: MongoDB connection string
 - `JWT_SECRET`: Random 32+ character string
 - `AI_API_KEY`: Gemini or OpenAI API key
@@ -191,12 +191,12 @@ Edit `server/.env` with your API keys:
 
 ### 2. Install Dependencies
 ```bash
-# Install Server Dependencies
-cd server
+# Install Backend Dependencies
+cd Backend
 npm install
 
-# Install Client Dependencies
-cd ../client
+# Install Frontend Dependencies
+cd ../Frontend
 npm install
 ```
 
@@ -205,7 +205,7 @@ In development, run both the backend server and frontend client concurrently:
 
 ```bash
 # Terminal 1: Start Express Backend (Port 5000)
-cd server
+cd Backend
 npm run dev
 
 # Terminal 2: Start Vite React Frontend (Port 5173)
