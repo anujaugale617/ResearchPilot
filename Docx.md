@@ -55,7 +55,7 @@ All components ↔ Authentication & Security
 
 ### System Architecture Diagram
 
-![ResearchPilot System Architecture](researchpilot_assets/system-architecture.png)
+![ResearchPilot System Architecture](system-architecture.png)
 
 ## System Architecture – Layer-wise
 
