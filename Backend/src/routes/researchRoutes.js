@@ -12,6 +12,8 @@ r.get("/:id/claims", c.getClaims);
 r.get("/:id/gaps", c.getGaps);
 r.get("/:id/conflicts", c.getConflicts);
 r.get("/:id/report", c.getReport);
+r.get("/:id/export-pdf", c.exportPdf);
+r.post("/:id/export-pdf", c.exportPdf);
 r.get("/:id/evaluation", c.getEvaluation);
 r.get("/:id", c.getResearch);
 r.delete("/:id", c.deleteResearch);

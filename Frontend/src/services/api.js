@@ -42,6 +42,10 @@ export const researchApi = {
   gaps: (id) => api.get(`/research/${id}/gaps`).then(unwrap),
   conflicts: (id) => api.get(`/research/${id}/conflicts`).then(unwrap),
   report: (id) => api.get(`/research/${id}/report`).then(unwrap),
+  exportPdf: (id) =>
+    api.get(`/research/${id}/export-pdf`, {
+      responseType: "blob",
+    }),
   evaluation: (id) => api.get(`/research/${id}/evaluation`).then(unwrap),
 };
 export const healthApi = { check: () => api.get("/health").then(unwrap) };

@@ -4,6 +4,7 @@ import { env } from "../config/env.js";
 import { ResearchSession } from "../models/ResearchSession.js";
 import { runResearch, titleFromQuestion } from "../services/researchService.js";
 import { subscribe } from "../services/eventBus.js";
+import { generatePdf, generatePdfFilename } from "../services/pdfService.js";
 const createSchema = z.object({
   researchQuestion: z.string().min(10).max(2000),
   objective: z.string().min(5).max(2000),
@@ -186,3 +187,55 @@ export async function getEvaluation(req, res) {
   const s = await owned(req, req.params.id);
   res.json({ success: true, data: { evaluation: s.evaluation } });
 }
+export async function exportPdf(req, res, next) {
+  try {
+    const s = await owned(req, req.params.id);
+    if (!s.report || s.report.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "REPORT_NOT_READY",
+          message: "The research report has not been generated yet or is empty.",
+        },
+      });
+    }
+
+    const filename = generatePdfFilename(s.title);
+    const pdfBuffer = await generatePdf({
+      title: s.title,
+      markdown: s.report,
+      metadata: {
+        author: req.user?.name || "ResearchPilot AI",
+        date: s.completedAt || s.updatedAt || s.createdAt,
+        objective: s.objective,
+        depth: s.depth,
+        confidenceScore: s.confidenceScore,
+        status: s.status,
+      },
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Length", pdfBuffer.length);
+    res.setHeader("Cache-Control", "no-cache");
+    return res.end(pdfBuffer);
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({
+        success: false,
+        error: {
+          code: err.code || "NOT_FOUND",
+          message: err.message,
+        },
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: "PDF_GENERATION_FAILED",
+        message: err.message || "Failed to generate research PDF report.",
+      },
+    });
+  }
+}
+
