@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { marked } from "marked";
 import puppeteer from "puppeteer";
+import PDFDocument from "pdfkit";
 
 // Configure marked for academic GitHub Flavored Markdown
 marked.setOptions({
@@ -162,7 +163,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       padding: 0;
     }
 
-    /* Document Header Banner */
     .document-header {
       border-bottom: 2px solid #0f172a;
       padding-bottom: 16px;
@@ -198,7 +198,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       line-height: 1.4;
     }
 
-    /* Metadata Badge Grid */
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -230,7 +229,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       color: #0f172a;
     }
 
-    /* Typography & Hierarchy */
     h1, h2, h3, h4, h5, h6 {
       color: #0f172a;
       font-weight: 700;
@@ -283,7 +281,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       font-style: italic;
     }
 
-    /* Lists */
     ul, ol {
       margin-top: 4px;
       margin-bottom: 12px;
@@ -295,12 +292,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       line-height: 1.6;
     }
 
-    li > ul, li > ol {
-      margin-top: 4px;
-      margin-bottom: 4px;
-    }
-
-    /* Academic Tables */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -311,7 +302,7 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
     }
 
     thead {
-      display: table-header-group; /* Repeats table header across pages in print */
+      display: table-header-group;
     }
 
     tr {
@@ -345,7 +336,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       background-color: #f8fafc;
     }
 
-    /* Blockquotes & Callouts */
     blockquote {
       border-left: 3.5px solid #0284c7;
       background-color: #f0f9ff;
@@ -362,7 +352,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       margin: 0;
     }
 
-    /* Code Blocks */
     pre {
       background-color: #0f172a;
       color: #f8fafc;
@@ -395,25 +384,18 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       border: none;
     }
 
-    /* Links & Citations */
     a {
       color: #0284c7;
       text-decoration: none;
       word-break: break-all;
     }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* Horizontal Rules */
     hr {
       border: none;
       border-top: 1px solid #cbd5e1;
       margin: 20px 0;
     }
 
-    /* Images */
     img {
       max-width: 100%;
       height: auto;
@@ -422,7 +404,6 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
       border-radius: 4px;
     }
 
-    /* Academic Verification Badge */
     .verification-footer-note {
       margin-top: 30px;
       padding: 10px 14px;
@@ -480,20 +461,9 @@ export function buildAcademicHtml({ title, markdownContent, metadata = {} }) {
 }
 
 /**
- * Generate a PDF Buffer from a Markdown research report.
- * Supports academic layout, headers, footers with page numbers, and custom options.
- *
- * @param {Object} options
- * @param {string} options.title - The research report title
- * @param {string} options.markdown - The raw Markdown report content
- * @param {Object} [options.metadata] - Optional session metadata (author, date, objective, depth, confidenceScore)
- * @returns {Promise<Buffer>} The generated PDF binary buffer
+ * Generate a PDF Buffer using Puppeteer.
  */
-export async function generatePdf({ title, markdown, metadata = {} }) {
-  if (!markdown || typeof markdown !== "string") {
-    throw new Error("Cannot generate PDF: markdown content is empty or invalid.");
-  }
-
+export async function generatePdfWithPuppeteer({ title, markdown, metadata = {} }) {
   const html = buildAcademicHtml({
     title,
     markdownContent: markdown,
@@ -504,7 +474,6 @@ export async function generatePdf({ title, markdown, metadata = {} }) {
   const page = await browser.newPage();
 
   try {
-    // Set content and wait until network is idle
     await page.setContent(html, {
       waitUntil: ["domcontentloaded", "networkidle0"],
     });
@@ -540,6 +509,288 @@ export async function generatePdf({ title, markdown, metadata = {} }) {
     return Buffer.from(pdfBuffer);
   } finally {
     await page.close();
+  }
+}
+
+/**
+ * 100% Pure JavaScript PDF generation using PDFKit.
+ * Guaranteed to work anywhere without requiring Chromium or system dependencies.
+ */
+export function generatePdfWithPdfKit({ title, markdown, metadata = {} }) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: "A4",
+        margins: { top: 55, bottom: 55, left: 50, right: 50 },
+        bufferPages: true,
+        info: {
+          Title: title || "Research Report",
+          Author: metadata.author || "ResearchPilot",
+          Subject: metadata.objective || "Academic Research Synthesis",
+        },
+      });
+
+      const chunks = [];
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
+
+      const contentWidth = 495.28;
+      const authorName = metadata.author || "ResearchPilot Autonomous Research Agent";
+      const formattedDate = metadata.date
+        ? new Date(metadata.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+        : new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      const depth = metadata.depth || "Standard";
+      const confidence = metadata.confidenceScore ?? metadata.confidence ?? 85;
+      const status = (metadata.status || "Completed").toUpperCase();
+
+      // Top Tagline
+      doc.fontSize(8).font("Helvetica-Bold").fillColor("#0284C7")
+        .text("RESEARCHPILOT ACADEMIC RESEARCH REPORT", 50, 50, { continued: true })
+        .text("AUTONOMOUS EVIDENCE SYNTHESIS", { align: "right" });
+
+      doc.moveDown(0.6);
+
+      // Main Report Title
+      doc.fontSize(18).font("Helvetica-Bold").fillColor("#0F172A")
+        .text(title || "Autonomous Research Report", { lineGap: 3 });
+
+      // Subtitle / Objective if present
+      if (metadata.objective) {
+        doc.fontSize(10).font("Helvetica-Oblique").fillColor("#475569")
+          .text(`Objective: ${metadata.objective}`, { lineGap: 2 });
+      }
+
+      doc.moveDown(0.6);
+
+      // Metadata card grid
+      const metaY = doc.y;
+      doc.rect(50, metaY, contentWidth, 38).fillAndStroke("#F8FAFC", "#CBD5E1");
+      const colWidth = contentWidth / 4;
+
+      const metaFields = [
+        ["AUTHOR / SYSTEM", authorName.slice(0, 22)],
+        ["GENERATION DATE", formattedDate],
+        ["RESEARCH DEPTH", `${depth} (${status})`],
+        ["CONFIDENCE SCORE", `${confidence}%`],
+      ];
+
+      metaFields.forEach(([lbl, val], idx) => {
+        const xPos = 50 + idx * colWidth + 8;
+        doc.fontSize(7).font("Helvetica-Bold").fillColor("#64748B")
+          .text(lbl, xPos, metaY + 6, { width: colWidth - 10, lineBreak: false });
+        doc.fontSize(8.5).font("Helvetica-Bold").fillColor("#0F172A")
+          .text(val, xPos, metaY + 19, { width: colWidth - 10, lineBreak: false });
+      });
+
+      doc.y = metaY + 48;
+      doc.moveTo(50, doc.y).lineTo(50 + contentWidth, doc.y).lineWidth(1.5).strokeColor("#0F172A").stroke();
+      doc.moveDown(0.8);
+
+      // Parse Markdown content line by line
+      const lines = (markdown || "").split(/\r?\n/);
+      let inCodeBlock = false;
+      let inTable = false;
+      let tableRows = [];
+
+      function flushTable() {
+        if (tableRows.length === 0) return;
+        const validRows = tableRows.filter((r) => !/^\s*\|?\s*[-:]+[-| :]*\|?\s*$/.test(r));
+        if (validRows.length === 0) {
+          tableRows = [];
+          return;
+        }
+
+        const parsedRows = validRows.map((r) =>
+          r.split("|").map((c) => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length - (r.endsWith("|") ? 1 : 0))
+        ).filter((r) => r.length > 0);
+
+        if (parsedRows.length === 0) {
+          tableRows = [];
+          return;
+        }
+
+        if (doc.y > 700) doc.addPage();
+        const numCols = Math.max(...parsedRows.map((r) => r.length));
+        const cellWidth = contentWidth / numCols;
+        const startX = 50;
+
+        parsedRows.forEach((row, rowIndex) => {
+          const isHeader = rowIndex === 0;
+          const rowHeight = 22;
+          if (doc.y + rowHeight > 760) doc.addPage();
+          const curY = doc.y;
+
+          doc.rect(startX, curY, contentWidth, rowHeight)
+            .fillAndStroke(isHeader ? "#F1F5F9" : rowIndex % 2 === 1 ? "#FFFFFF" : "#F8FAFC", "#CBD5E1");
+
+          row.forEach((cell, cIdx) => {
+            const cleanCell = cell.replace(/\*\*/g, "");
+            doc.fontSize(isHeader ? 8 : 7.5)
+              .font(isHeader ? "Helvetica-Bold" : "Helvetica")
+              .fillColor(isHeader ? "#0F172A" : "#334155")
+              .text(cleanCell, startX + cIdx * cellWidth + 5, curY + 6, {
+                width: cellWidth - 10,
+                lineBreak: false,
+                ellipsis: true,
+              });
+          });
+          doc.y = curY + rowHeight;
+        });
+
+        doc.moveDown(0.6);
+        tableRows = [];
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.trim().startsWith("```")) {
+          if (inCodeBlock) {
+            inCodeBlock = false;
+            doc.moveDown(0.5);
+          } else {
+            if (inTable) { flushTable(); inTable = false; }
+            inCodeBlock = true;
+            if (doc.y > 720) doc.addPage();
+          }
+          continue;
+        }
+
+        if (inCodeBlock) {
+          if (doc.y > 750) doc.addPage();
+          const codeY = doc.y;
+          doc.rect(50, codeY, contentWidth, 16).fill("#0F172A");
+          doc.fontSize(8).font("Courier").fillColor("#35D9E8").text(line || " ", 56, codeY + 3, { width: contentWidth - 12 });
+          continue;
+        }
+
+        if (line.trim().startsWith("|") || (line.includes("|") && line.trim().endsWith("|"))) {
+          inTable = true;
+          tableRows.push(line);
+          continue;
+        } else if (inTable) {
+          flushTable();
+          inTable = false;
+        }
+
+        if (!line.trim()) {
+          doc.moveDown(0.4);
+          continue;
+        }
+
+        if (line.startsWith("# ")) {
+          if (line.slice(2).trim().toLowerCase() === (title || "").toLowerCase()) continue;
+          if (doc.y > 690) doc.addPage();
+          doc.moveDown(0.6);
+          doc.fontSize(14).font("Helvetica-Bold").fillColor("#0F172A").text(line.slice(2).trim());
+          doc.moveDown(0.3);
+        } else if (line.startsWith("## ")) {
+          if (doc.y > 700) doc.addPage();
+          doc.moveDown(0.6);
+          const headingText = line.slice(3).trim();
+          doc.fontSize(11.5).font("Helvetica-Bold").fillColor("#0284C7").text(headingText);
+          doc.moveTo(50, doc.y + 2).lineTo(50 + contentWidth, doc.y + 2).lineWidth(0.5).strokeColor("#E2E8F0").stroke();
+          doc.y += 4;
+        } else if (line.startsWith("### ")) {
+          if (doc.y > 720) doc.addPage();
+          doc.moveDown(0.4);
+          doc.fontSize(10).font("Helvetica-Bold").fillColor("#1E293B").text(line.slice(4).trim());
+          doc.moveDown(0.2);
+        } else if (line.trim().startsWith("> ")) {
+          if (doc.y > 720) doc.addPage();
+          const quoteY = doc.y;
+          const quoteText = line.slice(2).replace(/\*/g, "").trim();
+          doc.fontSize(9).font("Helvetica-Oblique").fillColor("#0369A1");
+          const textHeight = doc.heightOfString(quoteText, { width: contentWidth - 24 });
+          doc.rect(50, quoteY, contentWidth, textHeight + 10).fill("#F0F9FF");
+          doc.rect(50, quoteY, 3.5, textHeight + 10).fill("#0284C7");
+          doc.text(quoteText, 62, quoteY + 5, { width: contentWidth - 24 });
+          doc.y = quoteY + textHeight + 14;
+        } else if (/^\s*[-*]\s+/.test(line)) {
+          if (doc.y > 750) doc.addPage();
+          const cleanLine = line.replace(/^\s*[-*]\s+/, "");
+          const isBold = cleanLine.startsWith("**");
+          let bulletText = cleanLine.replace(/\*\*/g, "");
+          doc.fontSize(9).font("Helvetica").fillColor("#1E293B");
+          doc.text("• ", 58, doc.y, { continued: true });
+          if (isBold) doc.font("Helvetica-Bold");
+          doc.text(bulletText, { width: contentWidth - 20, lineGap: 2 });
+          doc.moveDown(0.2);
+        } else if (/^\s*\d+\.\s+/.test(line)) {
+          if (doc.y > 750) doc.addPage();
+          const match = line.match(/^\s*(\d+\.)\s+(.*)/);
+          const num = match ? match[1] : "1.";
+          const itemText = (match ? match[2] : line).replace(/\[(.*?)\]\((.*?)\)/g, "$1 ($2)");
+          doc.fontSize(9).font("Helvetica-Bold").fillColor("#0284C7").text(`${num} `, 58, doc.y, { continued: true });
+          doc.font("Helvetica").fillColor("#1E293B").text(itemText, { width: contentWidth - 24, lineGap: 2 });
+          doc.moveDown(0.2);
+        } else {
+          if (doc.y > 750) doc.addPage();
+          const cleanPara = line.replace(/\*\*/g, "");
+          doc.fontSize(9.5).font("Helvetica").fillColor("#1E293B").text(cleanPara, 50, doc.y, {
+            width: contentWidth,
+            lineGap: 3,
+            align: "justify",
+          });
+          doc.moveDown(0.4);
+        }
+      }
+
+      if (inTable) flushTable();
+
+      // Number all pages at the end
+      const range = doc.bufferedPageRange();
+      for (let i = 0; i < range.count; i++) {
+        doc.switchToPage(i);
+
+        // Header
+        doc.fontSize(7.5).font("Helvetica-Bold").fillColor("#94A3B8")
+          .text("RESEARCHPILOT • ACADEMIC REPORT", 50, 30, { lineBreak: false });
+        doc.fontSize(7.5).font("Helvetica").fillColor("#94A3B8")
+          .text((title || "Research Report").slice(0, 45), 250, 30, { width: 295, align: "right", lineBreak: false });
+        doc.moveTo(50, 42).lineTo(50 + contentWidth, 42).lineWidth(0.5).strokeColor("#E2E8F0").stroke();
+
+        // Footer (within margin to prevent extra page creation)
+        doc.moveTo(50, 765).lineTo(50 + contentWidth, 765).lineWidth(0.5).strokeColor("#E2E8F0").stroke();
+        doc.fontSize(7.5).font("Helvetica").fillColor("#94A3B8")
+          .text("Autonomous Research Synthesis • ResearchPilot", 50, 770, { lineBreak: false });
+        doc.fontSize(7.5).font("Helvetica-Bold").fillColor("#94A3B8")
+          .text(`Page ${i + 1} of ${range.count}`, 250, 770, { width: 295, align: "right", lineBreak: false });
+      }
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+/**
+ * Generate a PDF Buffer from a Markdown research report.
+ * Tries Puppeteer first; seamlessly falls back to pure JavaScript PDFKit engine
+ * if Chromium is not installed (e.g. on Render Linux free tier).
+ *
+ * @param {Object} options
+ * @param {string} options.title - The research report title
+ * @param {string} options.markdown - The raw Markdown report content
+ * @param {Object} [options.metadata] - Optional session metadata (author, date, objective, depth, confidenceScore)
+ * @returns {Promise<Buffer>} The generated PDF binary buffer
+ */
+export async function generatePdf({ title, markdown, metadata = {} }) {
+  if (!markdown || typeof markdown !== "string") {
+    throw new Error("Cannot generate PDF: markdown content is empty or invalid.");
+  }
+
+  // 1. Try Puppeteer HTML-to-PDF rendering first
+  try {
+    return await generatePdfWithPuppeteer({ title, markdown, metadata });
+  } catch (err) {
+    console.warn(
+      `[pdfService] Puppeteer render encountered: "${err.message}". Seamlessly switching to pure JavaScript PDF engine...`
+    );
+    // 2. 100% reliable fallback with zero Chromium dependency (works on Render/Linux without Chrome)
+    return await generatePdfWithPdfKit({ title, markdown, metadata });
   }
 }
 

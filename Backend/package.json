@@ -6,7 +6,9 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "build": "npx puppeteer browsers install chrome",
+    "postinstall": "npx puppeteer browsers install chrome || true"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -19,6 +21,7 @@
     "marked": "^18.0.12",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
+    "pdfkit": "^0.20.2",
     "puppeteer": "^25.10.0",
     "zod": "^3.24.1"
   }

@@ -4,13 +4,15 @@
 Set `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL`, `NODE_ENV=production`, `DEMO_MODE=true`. Optional: `TAVILY_API_KEY` for live web search.
 
 ### PDF Export & Puppeteer on Render / Linux
-For server-side PDF generation via Puppeteer:
-- If deploying to Render with native Node environment, set environment variable:
-  `PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer`
-- If using Docker or a Linux VPS, ensure standard Chromium dependencies are installed:
-  `apt-get install -y ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 lsb-release wget xdg-utils`
-- Alternatively, specify `PUPPETEER_EXECUTABLE_PATH` pointing to an installed Chromium/Chrome binary.
+ResearchPilot includes a resilient **Dual-Engine PDF Architecture**:
+1. **Primary Engine (Puppeteer)**: Generates high-fidelity HTML-to-PDF reports with running headers and dynamic page numbers.
+   - Configured via `.puppeteerrc.cjs` to use local cache `./.cache/puppeteer`.
+   - On Render, set Build Command to: `npm run build` (which downloads Chrome into cache) or standard `npm install`.
+   - Optionally set `PUPPETEER_CACHE_DIR=/opt/render/.cache/puppeteer`.
+2. **Automatic Pure JavaScript Fallback (PDFKit)**: If Chrome is not installed or cannot run in the environment (e.g. Render free tier without system libraries), the backend automatically catches the error and generates a clean, professional academic PDF using pure JavaScript with zero native dependencies!
+   - Result: PDF download **never fails** with "Could not find Chrome", even on minimal Linux containers.
 
+Build command: `npm run build`
 Start command: `npm start`
 
 Health: `/api/health`
