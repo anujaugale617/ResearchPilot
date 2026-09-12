@@ -4,7 +4,7 @@ import { User } from "../models/User.js";
 export async function requireAuth(req, res, next) {
   try {
     const h = req.headers.authorization || "";
-    const token = h.startsWith("Bearer ") ? h.slice(7) : null;
+    const token = h.startsWith("Bearer ") ? h.slice(7) : (req.query?.token || null);
     if (!token)
       return res
         .status(401)

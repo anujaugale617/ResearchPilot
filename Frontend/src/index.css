@@ -54,3 +54,137 @@ body {
     linear-gradient(to right, rgba(30, 49, 75, 0.25) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(30, 49, 75, 0.25) 1px, transparent 1px);
 }
+
+/* Academic Report Formatted Normal Text Styles */
+.report-content h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #1E314B;
+}
+
+.report-content h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #35D9E8;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(30, 49, 75, 0.6);
+}
+
+.report-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-content p {
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+  line-height: 1.75;
+  color: #CBD5E1;
+  font-size: 0.875rem;
+}
+
+.report-content strong, .report-content b {
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.report-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  color: #CBD5E1;
+  font-size: 0.875rem;
+}
+
+.report-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  color: #CBD5E1;
+  font-size: 0.875rem;
+}
+
+.report-content li {
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
+}
+
+.report-content blockquote {
+  border-left: 3px solid #35D9E8;
+  background-color: rgba(7, 20, 38, 0.6);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #94A3B8;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.report-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.8125rem;
+}
+
+.report-content th {
+  background-color: #0D1B2E;
+  color: #F8FAFC;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #1E314B;
+}
+
+.report-content td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1E314B;
+  color: #CBD5E1;
+}
+
+.report-content tr:nth-child(even) {
+  background-color: rgba(13, 27, 46, 0.4);
+}
+
+.report-content code {
+  font-family: monospace;
+  font-size: 0.85em;
+  background: #0D1B2E;
+  color: #35D9E8;
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid #1E314B;
+}
+
+.report-content pre {
+  background: #071426;
+  padding: 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid #1E314B;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.report-content pre code {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.report-content a {
+  color: #35D9E8;
+  text-decoration: underline;
+}
+.report-content a:hover {
+  color: #FFFFFF;
+}
